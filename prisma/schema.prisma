@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  CUSTOMER
+}
+
+enum PropertyType {
+  VILLA
+  HOUSE
+  APART
+}
+
+enum PropertyStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  phone        String?
+  passwordHash String?
+  role         Role          @default(CUSTOMER)
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Property {
+  id            String          @id @default(cuid())
+  title         String
+  slug          String          @unique
+  description   String
+  type          PropertyType
+  status        PropertyStatus  @default(DRAFT)
+  city          String
+  district      String
+  address       String?
+  pricePerNight Decimal         @db.Decimal(10, 2)
+  capacity      Int
+  bedrooms      Int
+  bathrooms     Int
+  isFeatured    Boolean         @default(false)
+  images        PropertyImage[]
+  amenities     PropertyAmenity[]
+  reservations  Reservation[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([type, status, isFeatured])
+  @@index([city, district])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  url        String
+  altText    String?
+  order      Int      @default(0)
+  isCover    Boolean  @default(false)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, order])
+}
+
+model Amenity {
+  id         String            @id @default(cuid())
+  name       String            @unique
+  slug       String            @unique
+  icon       String?
+  properties PropertyAmenity[]
+}
+
+model PropertyAmenity {
+  propertyId String
+  amenityId  String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity    Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([propertyId, amenityId])
+}
+
+model Reservation {
+  id          String            @id @default(cuid())
+  propertyId  String
+  property    Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  guestName   String
+  guestEmail  String
+  guestPhone  String
+  guestCount  Int
+  checkIn     DateTime
+  checkOut    DateTime
+  totalPrice  Decimal           @db.Decimal(10, 2)
+  status      ReservationStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([propertyId, checkIn, checkOut, status])
+}
+
+model SiteContent {
+  id        String   @id @default(cuid())
+  key       String   @unique // örn: "hero_title", "hero_subtitle", "contact_phone", "theme_accent"
+  value     String
+  group     String   @default("general") // "hero", "about", "contact", "theme"
+  updatedAt DateTime @updatedAt
+}

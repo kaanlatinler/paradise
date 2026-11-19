@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Paradise Emlak — Günlük Kiralık Villa, Ev & Apart Platformu
 
-## Getting Started
+Deniz, kum, güneş ve turunçgil esintilerinden ilham alan **turuncu, mavi ve beyaz** temalı; dinamik içerik (CMS), gelişmiş arama/filtreleme, müsaitlik kontrollü rezervasyon talepleri ve yönetim paneline sahip günlük kiralık villa ve tatil konutu web uygulaması.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Tech Stack & Mimari
+
+- **Framework:** Next.js (App Router) & TypeScript
+- **Veritabanı & ORM:** PostgreSQL (Supabase) + Prisma ORM (`@prisma/adapter-pg`)
+- **Doğrulama & Güvenlik:** Zod, `scrypt` parola hashleme, HMAC-SHA256 imzalı `HttpOnly` oturum çerezi, bellek içi Rate Limiting
+- **UI & Stil:** Tailwind CSS (Akdeniz Mavisi, Turunçgil Turuncusu, Kum & Beyaz paleti)
+
+---
+
+## İki Kişilik Ekip İş Bölümü & Klasör Sınırları
+
+Git çakışmalarını en aza indirmek için sorumluluklar iki kola ayrılmıştır:
+
+- **Geliştirici A (Backend, Veritabanı & Admin Paneli):**
+  - `prisma/` (`schema.prisma`, `seed.ts`) ve `prisma7.config.ts`
+  - `src/lib/` (`prisma.ts`, `auth.ts`, `rate-limit.ts`)
+  - `src/actions/` (`properties.ts`, `reservations.ts`, `queries.ts`, `admin-*.ts`)
+  - `src/app/(admin)/` ve `src/components/admin/`
+  - `src/app/api/upload/`
+- **Geliştirici B (Frontend, UI/UX & Müşteri Vitrin Akışı):**
+  - `src/app/(public)/` ve `src/components/public/`
+  - Anasayfa, ilan listeleme/filtreleme, ilan detay galerisi, rezervasyon talep formu ve kurumsal sayfalar
+
+---
+
+## Ortam Değişkenleri (`.env`)
+
+Proje kök dizininde `.env` dosyasını oluşturup aşağıdaki değişkenleri tanımla:
+
+```env
+DATABASE_URL="postgresql://postgres.<ref>:<password>@<pooler-host>:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.<ref>:<password>@<pooler-host>:5432/postgres"
+AUTH_SECRET="en-az-32-karakterlik-guclu-rastgele-bir-anahtar"
 ```
+# 1. Bağımlılıkları kur
+npm install
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# 2. Prisma client üret ve migration uygula
+npx prisma generate
+npx prisma migrate dev --name init
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# 3. Örnek ilanlar, özellikler, CMS içerikleri ve admin kullanıcısı için seed çalıştır
+npx prisma db seed
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# 4. Geliştirme sunucusunu başlat
+npm run dev
