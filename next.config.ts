@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  // [Geliştirici B] next/image ile seed/CMS'teki Unsplash görsellerinin optimize edilebilmesi için.
+  // Admin yüklemeleri (/uploads/...) yerel olduğundan ayrıca izin gerektirmez.
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }],
+  },
 };
 
 export default nextConfig;
