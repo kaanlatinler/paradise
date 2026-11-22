@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Paradise Emlak — Tema Değişkenleri (Tailwind v4, CSS-first)
+ * Akdeniz Mavisi · Turunçgil Turuncusu · Kum/Krem & Beyaz · Kömür Grisi
+ * Kullanım: bg-sea-500, text-citrus-500, bg-sand, text-ink, font-display ...
+ */
+@theme {
+  /* Akdeniz Mavisi */
+  --color-sea-50: #eaf5fb;
+  --color-sea-100: #cce7f4;
+  --color-sea-200: #9ccfe9;
+  --color-sea-400: #2b95cc;
+  --color-sea-500: #0077b6;
+  --color-sea-600: #0062a0;
+  --color-sea-700: #023e8a;
+  --color-sea-900: #011f45;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Turunçgil Turuncusu */
+  --color-citrus-50: #fff5e6;
+  --color-citrus-100: #ffe6c2;
+  --color-citrus-400: #ff9f1c;
+  --color-citrus-500: #fb8500;
+  --color-citrus-600: #d96f00;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Kum / Krem & Beyaz */
+  --color-sand: #f4f1de;
+  --color-sand-dark: #e8e2c4;
+  --color-shell: #faf9f6;
+
+  /* Kömür Grisi */
+  --color-ink: #2b2d42;
+  --color-ink-soft: #5c5f77;
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), ui-serif, Georgia, serif;
+
+  --shadow-card: 0 1px 2px rgb(43 45 66 / 0.06), 0 8px 24px -12px rgb(2 62 138 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(43 45 66 / 0.06), 0 18px 40px -16px rgb(2 62 138 / 0.3);
+
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0% {
+      background-position: -400px 0;
+    }
+    100% {
+      background-position: 400px 0;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-shell text-ink font-sans antialiased;
+  }
+
+  ::selection {
+    @apply bg-citrus-400/40 text-ink;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-sea-500;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-sand-dark bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 transition focus:border-sea-500 focus:ring-2 focus:ring-sea-500/20 focus:outline-none;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-xs font-semibold tracking-wide text-ink-soft uppercase;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
