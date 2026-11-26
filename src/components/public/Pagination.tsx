@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
+import { getI18n } from "@/i18n/server";
 
 function pageWindow(current: number, total: number): (number | "…")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -13,7 +14,7 @@ function pageWindow(current: number, total: number): (number | "…")[] {
   return out;
 }
 
-export function Pagination({
+export async function Pagination({
   currentPage,
   totalPages,
   hrefFor,
@@ -23,13 +24,14 @@ export function Pagination({
   hrefFor: (page: number) => string;
 }) {
   if (totalPages <= 1) return null;
+  const { t } = await getI18n();
 
   const linkBase = "grid size-10 place-items-center rounded-full text-sm font-semibold transition";
 
   return (
-    <nav aria-label="Sayfalama" className="mt-12 flex items-center justify-center gap-1.5">
+    <nav aria-label={t.listing.pagination} className="mt-12 flex items-center justify-center gap-1.5">
       {currentPage > 1 ? (
-        <Link href={hrefFor(currentPage - 1)} aria-label="Önceki sayfa" className={`${linkBase} text-ink hover:bg-sand`}>
+        <Link href={hrefFor(currentPage - 1)} aria-label={t.listing.prevPage} className={`${linkBase} text-ink hover:bg-sand`}>
           <Icon name="chevron-left" size={18} />
         </Link>
       ) : null}
@@ -50,7 +52,7 @@ export function Pagination({
         ),
       )}
       {currentPage < totalPages ? (
-        <Link href={hrefFor(currentPage + 1)} aria-label="Sonraki sayfa" className={`${linkBase} text-ink hover:bg-sand`}>
+        <Link href={hrefFor(currentPage + 1)} aria-label={t.listing.nextPage} className={`${linkBase} text-ink hover:bg-sand`}>
           <Icon name="chevron-right" size={18} />
         </Link>
       ) : null}

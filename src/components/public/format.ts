@@ -2,33 +2,36 @@
  * Vitrin tarafında ortak kullanılan biçimlendirme ve sabitler.
  * Sunucu ve istemci bileşenlerinde güvenle kullanılabilir (Prisma importu yok).
  */
+import { intlLocale, type Dictionary, type Locale } from "@/i18n";
 
 export type PropertyTypeKey = "VILLA" | "HOUSE" | "APART";
 
-export const PROPERTY_TYPES: { key: PropertyTypeKey; label: string; plural: string; icon: string; blurb: string }[] = [
-  { key: "VILLA", label: "Villa", plural: "Villalar", icon: "palm", blurb: "Özel havuzlu, bahçeli ve tam mahremiyetli" },
-  { key: "HOUSE", label: "Müstakil Ev", plural: "Müstakil Evler", icon: "home", blurb: "Avlulu, sakin ve uzun konaklamaya uygun" },
-  { key: "APART", label: "Apart", plural: "Apartlar", icon: "building", blurb: "Plaja yakın, pratik ve ekonomik" },
+export const PROPERTY_TYPES: { key: PropertyTypeKey; icon: string }[] = [
+  { key: "VILLA", icon: "palm" },
+  { key: "HOUSE", icon: "home" },
+  { key: "APART", icon: "building" },
 ];
 
-export function propertyTypeLabel(type: string): string {
-  return PROPERTY_TYPES.find((t) => t.key === type)?.label ?? type;
+export function propertyTypeLabel(t: Dictionary, type: string): string {
+  return isPropertyType(type) ? t.types[type].label : type;
 }
 
 export function isPropertyType(value: unknown): value is PropertyTypeKey {
   return value === "VILLA" || value === "HOUSE" || value === "APART";
 }
 
-const tryFormatter = new Intl.NumberFormat("tr-TR", {
-  style: "currency",
-  currency: "TRY",
-  maximumFractionDigits: 0,
-});
+const priceFormatters = new Map<Locale, Intl.NumberFormat>();
 
-/** pricePerNight backend'den string gelir ("14500.00"). */
-export function formatPrice(value: string | number): string {
+/** pricePerNight backend'den string gelir ("14500.00"). Para birimi her dilde TRY'dir. */
+export function formatPrice(value: string | number, lang: Locale = "tr"): string {
   const n = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(n) ? tryFormatter.format(n) : "—";
+  if (!Number.isFinite(n)) return "—";
+  let f = priceFormatters.get(lang);
+  if (!f) {
+    f = new Intl.NumberFormat(intlLocale(lang), { style: "currency", currency: "TRY", maximumFractionDigits: 0 });
+    priceFormatters.set(lang, f);
+  }
+  return f.format(n);
 }
 
 /** next/image yalnızca yerel ve izinli uzak alan adlarını optimize edebilir; diğerleri için unoptimized kullan. */
@@ -75,9 +78,16 @@ export function todayKey(): string {
   return `${y}-${m}-${d}`;
 }
 
-const longDate = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-const shortDate = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", timeZone: "UTC" });
+export function formatDay(key: string, style: "long" | "short" = "long", lang: Locale = "tr"): string {
+  const options: Intl.DateTimeFormatOptions =
+    style === "long"
+      ? { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }
+      : { day: "numeric", month: "short", timeZone: "UTC" };
+  return new Intl.DateTimeFormat(intlLocale(lang), options).format(dayKeyToDate(key));
+}
 
-export function formatDay(key: string, style: "long" | "short" = "long"): string {
-  return (style === "long" ? longDate : shortDate).format(dayKeyToDate(key));
+export function formatMonth(month: string, lang: Locale = "tr"): string {
+  return new Intl.DateTimeFormat(intlLocale(lang), { month: "long", year: "numeric", timeZone: "UTC" }).format(
+    new Date(`${month}-01T00:00:00Z`),
+  );
 }

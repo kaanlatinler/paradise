@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
+import { fmt } from "@/i18n";
+import { useI18n } from "@/i18n/client";
 import { canOptimizeImage } from "./format";
 
 interface GalleryImage {
@@ -14,6 +16,7 @@ interface GalleryImage {
 
 export function PropertyGallery({ images, title }: { images: GalleryImage[]; title: string }) {
   const [index, setIndex] = useState<number | null>(null);
+  const { t } = useI18n();
   const count = images.length;
 
   // Sayfadan ayrılıp geri dönüldüğünde lightbox açık kalmasın (Activity ile korunan durum)
@@ -53,7 +56,7 @@ export function PropertyGallery({ images, title }: { images: GalleryImage[]; tit
             type="button"
             onClick={() => setIndex(i)}
             className={`relative aspect-[4/3] shrink-0 snap-center overflow-hidden rounded-2xl bg-sand ${count > 1 ? "w-[85%]" : "w-full"}`}
-            aria-label={`Fotoğraf ${i + 1} / ${count}: büyüt`}
+            aria-label={fmt(t.gallery.enlarge, { i: i + 1, n: count })}
           >
             <Image
               src={img.url}
@@ -80,7 +83,7 @@ export function PropertyGallery({ images, title }: { images: GalleryImage[]; tit
           className={`group relative overflow-hidden rounded-3xl bg-sand ${
             thumbs.length > 0 ? (thumbs.length === 1 ? "col-span-2 row-span-2" : "col-span-2 row-span-2") : "h-full"
           }`}
-          aria-label="Kapak fotoğrafını büyüt"
+          aria-label={t.gallery.enlargeCover}
         >
           <Image
             src={hero.url}
@@ -100,7 +103,7 @@ export function PropertyGallery({ images, title }: { images: GalleryImage[]; tit
             className={`group relative overflow-hidden rounded-3xl bg-sand ${
               thumbs.length === 1 ? "col-span-2 row-span-2" : thumbs.length === 2 ? "col-span-2" : ""
             } ${thumbs.length === 3 && i === 2 ? "col-span-2" : ""}`}
-            aria-label={`Fotoğraf ${i + 2} / ${count}: büyüt`}
+            aria-label={fmt(t.gallery.enlarge, { i: i + 2, n: count })}
           >
             <Image
               src={img.url}
@@ -112,7 +115,7 @@ export function PropertyGallery({ images, title }: { images: GalleryImage[]; tit
             />
             {i === thumbs.length - 1 && count > 5 ? (
               <span className="absolute inset-0 grid place-items-center bg-ink/50 text-lg font-semibold text-white">
-                +{count - 5} fotoğraf
+                {fmt(t.gallery.morePhotos, { n: count - 5 })}
               </span>
             ) : null}
           </button>
@@ -124,10 +127,10 @@ export function PropertyGallery({ images, title }: { images: GalleryImage[]; tit
         onClick={() => setIndex(0)}
         className="mt-3 inline-flex items-center gap-2 rounded-full border border-sand-dark bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-sea-500"
       >
-        <Icon name="image" size={16} /> Tüm fotoğraflar ({count})
+        <Icon name="image" size={16} /> {fmt(t.gallery.allPhotos, { n: count })}
       </button>
 
-      <Modal open={index !== null} onClose={() => setIndex(null)} label={`${title} fotoğraf galerisi`} tone="dark">
+      <Modal open={index !== null} onClose={() => setIndex(null)} label={fmt(t.gallery.label, { title })} tone="dark">
         {index !== null ? (
           <div className="flex h-dvh flex-col">
             <div className="relative flex-1">
@@ -145,7 +148,7 @@ export function PropertyGallery({ images, title }: { images: GalleryImage[]; tit
                   <button
                     type="button"
                     onClick={prev}
-                    aria-label="Önceki fotoğraf"
+                    aria-label={t.gallery.prev}
                     className="absolute top-1/2 left-3 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/25"
                   >
                     <Icon name="chevron-left" size={24} />
@@ -153,7 +156,7 @@ export function PropertyGallery({ images, title }: { images: GalleryImage[]; tit
                   <button
                     type="button"
                     onClick={next}
-                    aria-label="Sonraki fotoğraf"
+                    aria-label={t.gallery.next}
                     className="absolute top-1/2 right-3 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/25"
                   >
                     <Icon name="chevron-right" size={24} />

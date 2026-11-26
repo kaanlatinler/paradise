@@ -1,7 +1,12 @@
-export const NAV_ITEMS = [
-  { href: "/", label: "Anasayfa" },
-  { href: "/properties", label: "Tüm İlanlar" },
-  { href: "/properties?type=VILLA", label: "Villalar" },
-  { href: "/about", label: "Hakkımızda" },
-  { href: "/contact", label: "İletişim" },
-] as const;
+import type { Dictionary } from "@/i18n";
+
+/** Menü bağlantıları: yollar dil öneki olmadan tutulur, gösterimde localizePath ile çevrilir. */
+export function navItems(t: Dictionary) {
+  return [
+    { path: "/", label: t.nav.home },
+    { path: "/properties", label: t.nav.properties },
+    { path: "/properties?type=VILLA", label: t.nav.villas },
+    { path: "/about", label: t.nav.about },
+    { path: "/contact", label: t.nav.contact },
+  ];
+}

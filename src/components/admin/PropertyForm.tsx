@@ -7,6 +7,7 @@ import {
   upsertPropertyAction,
   UpsertPropertyInput,
 } from "@/actions/admin-properties";
+import { Spinner } from "@/components/ui/Spinner";
 
 export interface AmenityOption {
   id: string;
@@ -235,34 +236,34 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 rounded-xl border bg-white p-6 shadow-sm"
+      className="space-y-6 rounded-2xl border border-sand-dark/70 bg-white p-5 shadow-card sm:p-7"
     >
       {errorMsg && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div role="alert" className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
           {errorMsg}
         </div>
       )}
       {successMsg && (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div role="status" className="rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
           {successMsg}
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm font-medium">İlan Başlığı</label>
+          <label className="field-label">İlan Başlığı</label>
           <input
             type="text"
             required
             value={title}
             onChange={(e) => handleTitleChange(e.target.value)}
             placeholder="Örn: Turunç Bahçeli Havuzlu Villa"
-            className="w-full rounded-lg border px-3 py-2 text-sm"
+            className="field"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium">URL Slug</label>
+          <label className="field-label">URL Slug</label>
           <input
             type="text"
             required
@@ -272,16 +273,17 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
               setSlug(e.target.value);
             }}
             placeholder="turunc-bahceli-havuzlu-villa"
-            className="w-full rounded-lg border px-3 py-2 text-sm"
+            className="field"
           />
+          <p className="mt-1 truncate text-xs text-ink-soft">Adres: /properties/{slug || "…"}</p>
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium">Kategori</label>
+          <label className="field-label">Kategori</label>
           <select
             value={type}
             onChange={(e) => setType(e.target.value as PropertyType)}
-            className="w-full rounded-lg border px-3 py-2 text-sm"
+            className="field"
           >
             <option value={PropertyType.VILLA}>Villa</option>
             <option value={PropertyType.HOUSE}>Müstakil Ev</option>
@@ -290,11 +292,11 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium">Yayın Durumu</label>
+          <label className="field-label">Yayın Durumu</label>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as PropertyStatus)}
-            className="w-full rounded-lg border px-3 py-2 text-sm"
+            className="field"
           >
             <option value={PropertyStatus.DRAFT}>Taslak</option>
             <option value={PropertyStatus.PUBLISHED}>Yayında</option>
@@ -303,30 +305,30 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium">Şehir</label>
+          <label className="field-label">Şehir</label>
           <input
             type="text"
             required
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm"
+            className="field"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium">İlçe / Bölge</label>
+          <label className="field-label">İlçe / Bölge</label>
           <input
             type="text"
             required
             value={district}
             onChange={(e) => setDistrict(e.target.value)}
             placeholder="Örn: Kaş, Finike, Kalkan"
-            className="w-full rounded-lg border px-3 py-2 text-sm"
+            className="field"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium">
+          <label className="field-label">
             Gecelik Fiyat (₺)
           </label>
           <input
@@ -336,61 +338,61 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
             required
             value={pricePerNight}
             onChange={(e) => setPricePerNight(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm"
+            className="field"
           />
         </div>
 
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="mb-1 block text-sm font-medium">Misafir</label>
+            <label className="field-label">Misafir</label>
             <input
               type="number"
               min="1"
               required
               value={capacity}
               onChange={(e) => setCapacity(Number(e.target.value))}
-              className="w-full rounded-lg border px-3 py-2 text-sm"
+              className="field"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Oda</label>
+            <label className="field-label">Oda</label>
             <input
               type="number"
               min="0"
               required
               value={bedrooms}
               onChange={(e) => setBedrooms(Number(e.target.value))}
-              className="w-full rounded-lg border px-3 py-2 text-sm"
+              className="field"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Banyo</label>
+            <label className="field-label">Banyo</label>
             <input
               type="number"
               min="1"
               required
               value={bathrooms}
               onChange={(e) => setBathrooms(Number(e.target.value))}
-              className="w-full rounded-lg border px-3 py-2 text-sm"
+              className="field"
             />
           </div>
         </div>
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium">
+        <label className="field-label">
           Açık Adres / Mevki
         </label>
         <input
           type="text"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          className="w-full rounded-lg border px-3 py-2 text-sm"
+          className="field"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium">
+        <label className="field-label">
           İlan Açıklaması
         </label>
         <textarea
@@ -398,7 +400,7 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
           required
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full rounded-lg border px-3 py-2 text-sm"
+          className="field"
         />
       </div>
 
@@ -408,15 +410,15 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
           type="checkbox"
           checked={isFeatured}
           onChange={(e) => setIsFeatured(e.target.checked)}
-          className="h-4 w-4"
+          className="size-4 accent-citrus-500"
         />
-        <label htmlFor="isFeatured" className="text-sm font-medium">
+        <label htmlFor="isFeatured" className="text-sm font-medium text-ink">
           Anasayfada Öne Çıkan İlan Olarak Göster
         </label>
       </div>
 
       <div>
-        <p className="mb-2 text-sm font-medium">Özellikler</p>
+        <p className="field-label">Özellikler</p>
         <div className="flex flex-wrap gap-2">
           {amenities.map((amenity) => {
             const active = selectedAmenityIds.includes(amenity.id);
@@ -425,10 +427,11 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
                 key={amenity.id}
                 type="button"
                 onClick={() => toggleAmenity(amenity.id)}
-                className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                aria-pressed={active}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
                   active
-                    ? "border-sky-700 bg-sky-700 text-white"
-                    : "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                    ? "border-sea-500 bg-sea-500 text-white"
+                    : "border-sand-dark bg-white text-ink-soft hover:border-sea-500/50"
                 }`}
               >
                 {amenity.name}
@@ -440,38 +443,46 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">İlan Görselleri</label>
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif"
-            multiple
-            disabled={isUploading}
-            onChange={handleFileUpload}
-            className="text-sm"
-          />
+          <span className="field-label mb-0">İlan Görselleri</span>
+          <label
+            className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border border-sea-500/30 bg-white px-4 text-sm font-semibold text-sea-700 transition hover:border-sea-500 hover:bg-sea-50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-sea-500 ${
+              isUploading ? "pointer-events-none opacity-60" : ""
+            }`}
+          >
+            {isUploading ? <Spinner size={16} /> : null}
+            {isUploading ? "Yükleniyor…" : "Görsel ekle"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              multiple
+              disabled={isUploading}
+              onChange={handleFileUpload}
+              className="sr-only"
+            />
+          </label>
         </div>
 
-        {isUploading && (
-          <p className="text-xs text-amber-700">Görseller yükleniyor...</p>
-        )}
+        <p className="text-xs text-ink-soft">
+          JPEG, PNG, WebP veya AVIF · dosya başına en fazla 8 MB. İlk görsel kapak olur; sıralamayı oklarla değiştirebilirsiniz.
+        </p>
 
         {images.length > 0 && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {images.map((img, idx) => (
-              <div key={`${img.url}-${idx}`} className="rounded-lg border p-2">
+              <div key={`${img.url}-${idx}`} className="rounded-xl border border-sand-dark/70 p-2">
                 <img
                   src={img.url}
                   alt={img.altText || title}
-                  className="h-36 w-full rounded object-cover"
+                  className="h-36 w-full rounded-lg object-cover"
                 />
                 <div className="mt-2 flex items-center justify-between gap-1 text-xs">
                   <button
                     type="button"
                     onClick={() => setCoverImage(idx)}
-                    className={`rounded px-2 py-1 ${
+                    className={`rounded-full px-2.5 py-1 font-semibold ${
                       img.isCover
-                        ? "bg-amber-500 text-white"
-                        : "bg-slate-100 text-slate-700"
+                        ? "bg-citrus-500 text-white"
+                        : "bg-sand text-ink-soft hover:bg-sand-dark"
                     }`}
                   >
                     {img.isCover ? "Kapak" : "Kapak Yap"}
@@ -481,7 +492,8 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
                       type="button"
                       onClick={() => moveImage(idx, -1)}
                       disabled={idx === 0}
-                      className="rounded border px-1.5 py-0.5 disabled:opacity-40"
+                      aria-label="Görseli öne al"
+                      className="rounded-full border border-sand-dark px-2 py-0.5 disabled:opacity-40"
                     >
                       ↑
                     </button>
@@ -489,14 +501,15 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
                       type="button"
                       onClick={() => moveImage(idx, 1)}
                       disabled={idx === images.length - 1}
-                      className="rounded border px-1.5 py-0.5 disabled:opacity-40"
+                      aria-label="Görseli geri al"
+                      className="rounded-full border border-sand-dark px-2 py-0.5 disabled:opacity-40"
                     >
                       ↓
                     </button>
                     <button
                       type="button"
                       onClick={() => removeImage(idx)}
-                      className="rounded bg-red-50 px-2 py-0.5 text-red-600"
+                      className="rounded-full bg-rose-50 px-2.5 py-0.5 font-semibold text-rose-700 hover:bg-rose-100"
                     >
                       Sil
                     </button>
@@ -508,21 +521,22 @@ export function PropertyForm({ amenities, initialData }: PropertyFormProps) {
         )}
       </div>
 
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="flex justify-end gap-3 border-t border-sand-dark/60 pt-5">
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-lg border px-4 py-2 text-sm"
+          className="h-11 rounded-full px-5 text-sm font-semibold text-ink-soft hover:bg-sand"
         >
           İptal
         </button>
         <button
           type="submit"
           disabled={isPending || isUploading}
-          className="rounded-lg bg-sky-800 px-5 py-2 text-sm font-medium text-white hover:bg-sky-900 disabled:opacity-50"
+          className="inline-flex h-11 items-center gap-2 rounded-full bg-citrus-500 px-6 text-sm font-semibold text-white hover:bg-citrus-600 disabled:opacity-60"
         >
+          {isPending ? <Spinner size={16} /> : null}
           {isPending
-            ? "Kaydediliyor..."
+            ? "Kaydediliyor…"
             : initialData?.id
               ? "Değişiklikleri Kaydet"
               : "İlanı Oluştur"}

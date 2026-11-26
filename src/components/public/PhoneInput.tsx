@@ -2,6 +2,8 @@
 
 import { useId, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
+import { fmt, type Locale } from "@/i18n";
+import { useI18n } from "@/i18n/client";
 
 interface Country {
   iso: string;
@@ -75,8 +77,19 @@ interface PhoneInputProps {
   invalid?: boolean;
 }
 
+/** Ülke adı: Türkçede listedeki ad, diğer dillerde tarayıcının Intl.DisplayNames çevirisi */
+function countryName(c: Country, lang: Locale): string {
+  if (lang === "tr") return c.name;
+  try {
+    return new Intl.DisplayNames([lang], { type: "region" }).of(c.iso) ?? c.name;
+  } catch {
+    return c.name;
+  }
+}
+
 export function PhoneInput({ onChange, invalid }: PhoneInputProps) {
   const id = useId();
+  const { lang, t } = useI18n();
   const [iso, setIso] = useState("TR");
   const [national, setNational] = useState("");
   const country = COUNTRIES.find((c) => c.iso === iso) ?? COUNTRIES[0];
@@ -90,7 +103,7 @@ export function PhoneInput({ onChange, invalid }: PhoneInputProps) {
   return (
     <div>
       <label htmlFor={`${id}-number`} className="field-label">
-        Telefon
+        {t.phone.label}
       </label>
       <div
         className={`flex rounded-xl border bg-white transition focus-within:ring-2 ${
@@ -105,7 +118,7 @@ export function PhoneInput({ onChange, invalid }: PhoneInputProps) {
           <span>{country.dial}</span>
           <Icon name="chevron-down" size={14} className="text-ink-soft" />
           <select
-            aria-label="Ülke kodu"
+            aria-label={t.phone.countryCode}
             value={iso}
             onChange={(e) => {
               const next = COUNTRIES.find((c) => c.iso === e.target.value) ?? COUNTRIES[0];
@@ -118,7 +131,7 @@ export function PhoneInput({ onChange, invalid }: PhoneInputProps) {
           >
             {COUNTRIES.map((c) => (
               <option key={c.iso} value={c.iso}>
-                {c.name} ({c.dial})
+                {countryName(c, lang)} ({c.dial})
               </option>
             ))}
           </select>
@@ -143,8 +156,8 @@ export function PhoneInput({ onChange, invalid }: PhoneInputProps) {
       {invalid ? (
         <p className="mt-1 text-xs font-medium text-citrus-600">
           {country.digits
-            ? `${country.name} numarası ${country.digits} haneli olmalıdır (başında 0 olmadan).`
-            : "Lütfen geçerli bir telefon numarası girin."}
+            ? fmt(t.phone.invalidDigits, { country: countryName(country, lang), n: country.digits })
+            : t.phone.invalid}
         </p>
       ) : null}
     </div>

@@ -40,6 +40,40 @@
 
   --animate-shimmer: shimmer 1.6s ease-in-out infinite;
   --animate-progress: progress 8s cubic-bezier(0.1, 0.65, 0.2, 1) forwards;
+  /* Marka yükleyicisi: güneş yükselip alçalır, dalgalar yatay akar */
+  --animate-sun-bob: sun-bob 1.6s ease-in-out infinite;
+  --animate-wave-flow: wave-flow 1.6s linear infinite;
+  --animate-fade-in: fade-in 0.25s ease-out both;
+
+  @keyframes sun-bob {
+    0%,
+    100% {
+      transform: translateY(3px);
+    }
+    50% {
+      transform: translateY(-3px);
+    }
+  }
+
+  @keyframes wave-flow {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-20px);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
   @keyframes progress {
     0% {

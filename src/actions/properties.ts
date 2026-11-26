@@ -14,9 +14,21 @@ export interface PropertyFilterInput {
   checkIn?: string; // ISO date string
   checkOut?: string; // ISO date string
   featuredOnly?: boolean;
+  /** Sıralama: recommended (öne çıkan → en yeni), price_asc, price_desc, capacity_desc, newest */
+  sortBy?: PropertySortKey;
   page?: number;
   pageSize?: number;
 }
+
+export type PropertySortKey = "recommended" | "price_asc" | "price_desc" | "capacity_desc" | "newest";
+
+const SORT_ORDERS: Record<PropertySortKey, Prisma.PropertyOrderByWithRelationInput[]> = {
+  recommended: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+  price_asc: [{ pricePerNight: "asc" }, { createdAt: "desc" }],
+  price_desc: [{ pricePerNight: "desc" }, { createdAt: "desc" }],
+  capacity_desc: [{ capacity: "desc" }, { pricePerNight: "asc" }],
+  newest: [{ createdAt: "desc" }],
+};
 
 export async function getFilteredProperties(filters: PropertyFilterInput = {}) {
   const page = Math.max(1, filters.page ?? 1);
@@ -85,7 +97,7 @@ export async function getFilteredProperties(filters: PropertyFilterInput = {}) {
       where,
       skip,
       take: pageSize,
-      orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+      orderBy: SORT_ORDERS[filters.sortBy ?? "recommended"] ?? SORT_ORDERS.recommended,
       include: {
         images: {
           orderBy: { order: "asc" },
@@ -112,4 +124,29 @@ export async function getFilteredProperties(filters: PropertyFilterInput = {}) {
     totalPages: Math.ceil(totalCount / pageSize),
     currentPage: page,
   };
+}
+
+/**
+ * Yayındaki ilanların şehir ve ilçe listesi (filtre açılır menüleri için).
+ * Değerler veritabanındaki yazımıyla döner; böylece Türkçe karakter farkı (Kas/Kaş) sorun olmaz.
+ */
+export async function getPropertyLocations() {
+  const rows = await prisma.property.findMany({
+    where: { status: PropertyStatus.PUBLISHED },
+    select: { city: true, district: true },
+    distinct: ["city", "district"],
+    orderBy: [{ city: "asc" }, { district: "asc" }],
+  });
+
+  const cities = new Map<string, string[]>();
+  for (const row of rows) {
+    const list = cities.get(row.city) ?? [];
+    if (!list.includes(row.district)) list.push(row.district);
+    cities.set(row.city, list);
+  }
+
+  return [...cities.entries()].map(([city, districts]) => ({
+    city,
+    districts: districts.sort((a, b) => a.localeCompare(b, "tr")),
+  }));
 }

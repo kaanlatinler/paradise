@@ -1,5 +1,7 @@
 import { PropertyGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
-import { Spinner } from "@/components/ui/Spinner";
+import { BrandLoader } from "@/components/ui/BrandLoader";
+import { LoadingBadge } from "./LoadingBadge";
+import { getI18n } from "@/i18n/server";
 
 /** Başlık bandı iskeleti (İlanlar, İletişim gibi sayfaların üst kısmı) */
 function HeaderBandSkeleton() {
@@ -17,6 +19,7 @@ function HeaderBandSkeleton() {
 export function ListingResultsSkeleton() {
   return (
     <div className="grid gap-8 lg:grid-cols-[18.5rem_1fr]">
+      <LoadingBadge />
       <Skeleton className="hidden h-[34rem] rounded-3xl lg:block" />
       <div>
         <Skeleton className="mb-5 h-8 w-48" />
@@ -26,9 +29,10 @@ export function ListingResultsSkeleton() {
   );
 }
 
-export function ListingPageSkeleton() {
+export async function ListingPageSkeleton() {
+  const { t } = await getI18n();
   return (
-    <div role="status" aria-label="İlanlar yükleniyor">
+    <div role="status" aria-label={t.common.listingsLoading}>
       <HeaderBandSkeleton />
       <div className="container-page py-8 sm:py-12">
         <ListingResultsSkeleton />
@@ -37,9 +41,11 @@ export function ListingPageSkeleton() {
   );
 }
 
-export function DetailPageSkeleton() {
+export async function DetailPageSkeleton() {
+  const { t } = await getI18n();
   return (
-    <div className="container-page pt-8 pb-14" role="status" aria-label="İlan yükleniyor">
+    <div className="container-page pt-8 pb-14" role="status" aria-label={t.common.propertyLoading}>
+      <LoadingBadge />
       <Skeleton className="mb-5 h-4 w-60" />
       <Skeleton className="mb-3 h-10 w-full max-w-xl" />
       <Skeleton className="mb-6 h-5 w-72" />
@@ -56,13 +62,13 @@ export function DetailPageSkeleton() {
 }
 
 /** Diğer vitrin sayfaları için genel yükleme ekranı */
-export function GenericPageLoading() {
+export async function GenericPageLoading() {
+  const { t } = await getI18n();
   return (
-    <div role="status" aria-label="Sayfa yükleniyor">
+    <div role="status" aria-label={t.common.pageLoading}>
       <HeaderBandSkeleton />
-      <div className="container-page grid place-items-center py-20 text-sea-500">
-        <Spinner size={32} />
-        <p className="mt-3 text-sm font-medium text-ink-soft">Yükleniyor…</p>
+      <div className="container-page grid place-items-center py-20">
+        <BrandLoader size={72} label={t.common.loading} />
       </div>
     </div>
   );

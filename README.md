@@ -50,3 +50,27 @@ npx prisma db seed
 
 # 4. Geliştirme sunucusunu başlat
 npm run dev
+---
+
+## Güncel Yapı (Kasım 2026 güncellemesi)
+
+### İki dil desteği (TR / EN)
+- Vitrin sayfaları `src/app/[lang]/` altındadır ve bu klasör sitenin **kök düzenidir** (`html lang` dile göre ayarlanır).
+- **Türkçe** adresler öneksizdir (`/`, `/properties`, `/properties/[slug]`); `src/proxy.ts` bunları içeride `/tr/...` rotasına yeniden yazar.
+- **İngilizce** adresler `/en` önekiyle çalışır (`/en/properties`). `/tr/...` ile gelen istekler kalıcı olarak öneksiz adrese yönlendirilir.
+- Arayüz metinleri: `src/i18n/dictionaries/tr.ts` ve `en.ts` (TypeScript iki sözlüğün aynı yapıda olmasını zorunlu kılar).
+  - Sunucu bileşenleri: `const { t, lang, href } = await getI18n()` (`src/i18n/server.ts`, `next/root-params` ile).
+  - İstemci bileşenleri: `const { t, lang, href } = useI18n()` (`src/i18n/client.tsx`).
+  - Bağlantılar için her zaman `href("/yol")` kullanın; dil önekini otomatik ekler.
+- İlan başlık/açıklamaları veritabanında tek dildedir (Türkçe). CMS'teki `hero_title`, `hero_subtitle`, `about_text` için İngilizce karşılıklar `<anahtar>_en` olarak admin › Site İçerikleri sayfasından girilir.
+
+### Yönetim paneli (`/admin`)
+- `src/app/(admin)/` ayrı bir kök düzendir (yalnızca Türkçe, arama motorlarına kapalı). Erişim `src/proxy.ts` içinde imzalı oturum çereziyle korunur.
+- Sayfalar: **Genel Bakış** (doluluk, gelir, bekleyen talepler), **Rezervasyonlar** (onay/ret/iptal, takvimde tarih kapatma), **İlanlar** (liste, ekle, düzenle, sil), **Site İçerikleri** (CMS, TR + EN).
+
+### Diğer
+- `src/middleware.ts` → `src/proxy.ts` (Next 16 adlandırması; admin koruması birebir taşındı).
+- `getFilteredProperties` artık `sortBy` alır (`recommended | price_asc | price_desc | capacity_desc | newest`); `getPropertyLocations()` filtrelerdeki şehir/ilçe listesini verir.
+- Seed, admin şifresini **`SEED_ADMIN_PASSWORD`** ortam değişkeninden okur ve mevcut admin şifresini ezmez.
+- Admin şifresini değiştirmek için: `npx tsx scripts/change-admin-password.ts`
+- Eşleşmeyen adresler için `src/app/global-not-found.tsx` (`experimental.globalNotFound`).

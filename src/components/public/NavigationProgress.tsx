@@ -2,6 +2,8 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { BrandLoader } from "@/components/ui/BrandLoader";
+import { useI18n } from "@/i18n/client";
 
 const START_EVENT = "paradise:navigation-start";
 
@@ -55,6 +57,9 @@ function RouteChangeWatcher({ onChange }: { onChange: () => void }) {
  */
 export function NavigationProgress() {
   const [phase, setPhase] = useState<Phase>("idle");
+  // Geçiş kısa sürerse göstergeyi hiç gösterme (göz kırpmasını önler)
+  const [showLoader, setShowLoader] = useState(false);
+  const { t } = useI18n();
   const timers = useRef<number[]>([]);
 
   function clearTimers() {
@@ -65,12 +70,14 @@ export function NavigationProgress() {
   function start() {
     clearTimers();
     setPhase("loading");
+    timers.current.push(window.setTimeout(() => setShowLoader(true), 280));
     // Güvenlik: bir şekilde tamamlanmazsa 15 sn sonra kapat
     timers.current.push(window.setTimeout(finish, 15_000));
   }
 
   function finish() {
     clearTimers();
+    setShowLoader(false);
     setPhase((p) => (p === "idle" ? p : "done"));
     timers.current.push(window.setTimeout(() => setPhase("idle"), 500));
   }
@@ -114,9 +121,19 @@ export function NavigationProgress() {
           }`}
         />
       </div>
-      {phase === "loading" ? (
+      {phase === "loading" && showLoader ? (
+        <div className="pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex justify-center px-4">
+          <div
+            role="status"
+            className="animate-fade-in inline-flex items-center gap-2.5 rounded-full bg-white/95 py-1.5 pr-4 pl-1.5 shadow-lift ring-1 ring-sand-dark/60 backdrop-blur"
+          >
+            <BrandLoader size={30} />
+            <span className="text-sm font-semibold text-sea-700">{t.common.loading}</span>
+          </div>
+        </div>
+      ) : phase === "loading" ? (
         <span className="sr-only" role="status">
-          Sayfa yükleniyor
+          {t.common.pageLoading}
         </span>
       ) : null}
     </>

@@ -1,14 +1,18 @@
+import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { Suspense } from "react";
 import { PropertyForm } from "@/components/admin/PropertyForm";
+import { AdminContainer, AdminPageHeader } from "@/components/admin/ui";
+import { LoadingBadge } from "@/components/public/LoadingBadge";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { requireAdminSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-interface EditPropertyPageProps {
-  params: Promise<{ id: string }>;
-}
+export const metadata: Metadata = { title: "İlanı Düzenle" };
 
-export default async function EditPropertyPage({
-  params,
-}: EditPropertyPageProps) {
+async function EditPropertyContent({ params }: { params: PageProps<"/admin/properties/[id]">["params"] }) {
+  await requireAdminSession();
   const { id } = await params;
 
   const [property, amenities] = await Promise.all([
@@ -30,11 +34,22 @@ export default async function EditPropertyPage({
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">İlanı Düzenle</h1>
-        <p className="text-sm text-slate-600">{property.title}</p>
-      </div>
+    <>
+      <AdminPageHeader
+        title="İlanı Düzenle"
+        description={property.title}
+        action={
+          property.status === "PUBLISHED" ? (
+            <Link
+              href={`/properties/${property.slug}`}
+              target="_blank"
+              className="inline-flex h-10 items-center rounded-full border border-sea-500/30 bg-white px-4 text-sm font-semibold text-sea-700 hover:bg-sea-50"
+            >
+              Sitede gör
+            </Link>
+          ) : null
+        }
+      />
       <PropertyForm
         amenities={amenities}
         initialData={{
@@ -61,6 +76,26 @@ export default async function EditPropertyPage({
           })),
         }}
       />
-    </div>
+    </>
+  );
+}
+
+export default function EditPropertyPage({ params }: PageProps<"/admin/properties/[id]">) {
+  return (
+    <AdminContainer>
+      <Link href="/admin/properties" className="mb-3 inline-flex text-sm font-semibold text-sea-700 hover:underline">
+        ← İlanlara dön
+      </Link>
+      <Suspense
+        fallback={
+          <>
+            <LoadingBadge />
+            <Skeleton className="h-[40rem] rounded-2xl" />
+          </>
+        }
+      >
+        <EditPropertyContent params={params} />
+      </Suspense>
+    </AdminContainer>
   );
 }
