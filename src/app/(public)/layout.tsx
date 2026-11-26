@@ -1,5 +1,6 @@
 import { Footer } from "@/components/public/Footer";
 import { Navbar } from "@/components/public/Navbar";
+import { NavigationProgress } from "@/components/public/NavigationProgress";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       >
         İçeriğe geç
       </a>
+      <NavigationProgress />
       <Navbar />
       <main id="main" className="flex-1">
         {children}

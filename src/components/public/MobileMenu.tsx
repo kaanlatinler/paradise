@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Icon } from "@/components/ui/Icon";
 import { buttonClasses } from "@/components/ui/Button";
 import Link from "next/link";
@@ -32,10 +33,11 @@ export function MobileMenu({ contactSlot }: { contactSlot?: ReactNode }) {
         <Icon name={open ? "x" : "menu"} size={22} />
       </button>
 
-      {open ? (
+      {open
+        ? createPortal(
         <div
           id="mobile-menu"
-          className="fixed inset-x-0 top-[4.25rem] bottom-0 z-40 overflow-y-auto border-t border-sand-dark bg-shell px-4 pt-4 pb-10"
+          className="fixed inset-x-0 top-[4.25rem] bottom-0 z-40 overflow-y-auto lg:hidden border-t border-sand-dark bg-shell px-4 pt-4 pb-10"
         >
           <nav aria-label="Mobil menü" className="space-y-1">
             <Suspense fallback={<NavLinksStatic variant="mobile" />}>
@@ -52,8 +54,10 @@ export function MobileMenu({ contactSlot }: { contactSlot?: ReactNode }) {
             </Link>
             {contactSlot}
           </div>
-        </div>
-      ) : null}
+        </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

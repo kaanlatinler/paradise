@@ -5,13 +5,13 @@ import { Suspense } from "react";
 import { getFilteredProperties } from "@/actions/properties";
 import { getBookedDateRanges } from "@/actions/queries";
 import { PropertyCard } from "@/components/public/PropertyCard";
+import { DetailPageSkeleton } from "@/components/public/PageSkeletons";
 import { PropertyGallery } from "@/components/public/PropertyGallery";
 import { ReservationRequestForm } from "@/components/public/ReservationRequestForm";
 import { SectionHeading } from "@/components/public/SectionHeading";
 import { formatPrice, propertyTypeLabel } from "@/components/public/format";
 import { Badge } from "@/components/ui/Badge";
 import { Icon } from "@/components/ui/Icon";
-import { Skeleton } from "@/components/ui/Skeleton";
 import { getPropertyBySlug, type PropertyDetail } from "../../_lib/data";
 
 type Props = PageProps<"/properties/[slug]">;
@@ -224,7 +224,7 @@ async function PropertyDetailContent({ params, searchParams }: Props) {
             </section>
           </div>
 
-          <aside id="rezervasyon" className="lg:sticky lg:top-24 lg:self-start">
+          <aside id="rezervasyon" className="scroll-mt-24 lg:self-start">
             <div className="overflow-hidden rounded-3xl bg-white shadow-lift ring-1 ring-sand-dark/60">
               <ReservationRequestForm
                 propertyId={property.id}
@@ -262,27 +262,9 @@ async function PropertyDetailContent({ params, searchParams }: Props) {
   );
 }
 
-function DetailSkeleton() {
-  return (
-    <div className="container-page pt-8 pb-14" role="status" aria-label="İlan yükleniyor">
-      <Skeleton className="mb-5 h-4 w-60" />
-      <Skeleton className="mb-3 h-10 w-full max-w-xl" />
-      <Skeleton className="mb-6 h-5 w-72" />
-      <Skeleton className="h-[20rem] rounded-3xl sm:h-[32rem]" />
-      <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_24rem]">
-        <div className="space-y-4">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-40" />
-        </div>
-        <Skeleton className="h-[36rem] rounded-3xl" />
-      </div>
-    </div>
-  );
-}
-
 export default function PropertyDetailPage(props: Props) {
   return (
-    <Suspense fallback={<DetailSkeleton />}>
+    <Suspense fallback={<DetailPageSkeleton />}>
       <PropertyDetailContent {...props} />
     </Suspense>
   );

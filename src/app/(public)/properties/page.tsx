@@ -6,10 +6,10 @@ import { getAllAmenities } from "@/actions/queries";
 import { Pagination } from "@/components/public/Pagination";
 import { PropertyCard } from "@/components/public/PropertyCard";
 import { PropertyFilters } from "@/components/public/PropertyFilters";
+import { ListingResultsSkeleton } from "@/components/public/PageSkeletons";
 import { SortSelect } from "@/components/public/SortSelect";
 import { formatDay, formatPrice, propertyTypeLabel } from "@/components/public/format";
 import { Icon } from "@/components/ui/Icon";
-import { PropertyGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
 import type { PropertyListItem } from "../_lib/data";
 import { listingHref, parseListingQuery, toFilterInput, type ListingQuery, type SortKey } from "./_lib/search-params";
 
@@ -111,7 +111,17 @@ async function ListingContent({ searchParams }: { searchParams: PageProps<"/prop
 
         <ActiveFilterChips q={q} amenityNames={new Map(amenities.map((a) => [a.slug, a.name]))} />
 
-        {items.length === 0 ? (
+        {items.length === 0 && result.totalCount > 0 ? (
+          <div className="rounded-3xl border border-dashed border-sand-dark bg-white px-6 py-16 text-center">
+            <h3 className="font-display text-xl font-semibold text-ink">Bu sayfada ilan yok</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-ink-soft">
+              Aradığın kriterlere uygun {result.totalCount} konak var; ilk sayfadan göz atabilirsin.
+            </p>
+            <Link href={listingHref({ ...q, page: 1 })} className="mt-6 inline-flex text-sm font-semibold text-sea-700 hover:underline">
+              İlk sayfaya dön
+            </Link>
+          </div>
+        ) : items.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-sand-dark bg-white px-6 py-16 text-center">
             <span className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-sand text-sea-500">
               <Icon name="search" size={26} />
@@ -142,18 +152,6 @@ async function ListingContent({ searchParams }: { searchParams: PageProps<"/prop
   );
 }
 
-function ListingFallback() {
-  return (
-    <div className="grid gap-8 lg:grid-cols-[18.5rem_1fr]">
-      <Skeleton className="hidden h-[34rem] rounded-3xl lg:block" />
-      <div>
-        <Skeleton className="mb-5 h-8 w-48" />
-        <PropertyGridSkeleton count={6} />
-      </div>
-    </div>
-  );
-}
-
 export default function PropertiesPage({ searchParams }: PageProps<"/properties">) {
   return (
     <>
@@ -168,7 +166,7 @@ export default function PropertiesPage({ searchParams }: PageProps<"/properties"
       </section>
 
       <div className="container-page py-8 sm:py-12">
-        <Suspense fallback={<ListingFallback />}>
+        <Suspense fallback={<ListingResultsSkeleton />}>
           <ListingContent searchParams={searchParams} />
         </Suspense>
       </div>

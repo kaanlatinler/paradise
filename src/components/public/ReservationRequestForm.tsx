@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import { AvailabilityCalendar, bookedNightSet, rangeIsFree, type BookedRange } from "./AvailabilityCalendar";
 import { formatDay, formatPrice, nightsBetween } from "./format";
 import { PhoneInput } from "./PhoneInput";
+import { Spinner } from "@/components/ui/Spinner";
 import { useToday } from "./useToday";
 
 interface Props {
@@ -194,7 +195,7 @@ export function ReservationRequestForm({
             className="field"
           />
         </label>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        <div className="grid gap-3">
           <label className="block">
             <span className="field-label">E-posta</span>
             <input
@@ -211,6 +212,7 @@ export function ReservationRequestForm({
             onChange={(full, complete) => {
               setGuestPhone(full);
               setPhoneComplete(complete);
+              if (complete && phoneTouched) setError(null);
             }}
           />
         </div>
@@ -253,7 +255,13 @@ export function ReservationRequestForm({
         disabled={pending}
         className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-full bg-citrus-500 text-base font-semibold text-white shadow-[0_8px_20px_-8px_rgb(251_133_0/0.7)] transition hover:bg-citrus-600 disabled:opacity-60"
       >
-        {pending ? "Gönderiliyor…" : "Rezervasyon Talebi Gönder"}
+        {pending ? (
+          <>
+            <Spinner size={18} /> Gönderiliyor…
+          </>
+        ) : (
+          "Rezervasyon Talebi Gönder"
+        )}
       </button>
       <p className="text-center text-xs text-ink-soft">Talep göndermek ücretsizdir; onay sonrası seninle iletişime geçeriz.</p>
     </form>

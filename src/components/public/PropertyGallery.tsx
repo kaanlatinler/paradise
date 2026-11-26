@@ -52,7 +52,7 @@ export function PropertyGallery({ images, title }: { images: GalleryImage[]; tit
             key={img.id}
             type="button"
             onClick={() => setIndex(i)}
-            className="relative aspect-[4/3] w-[85%] shrink-0 snap-center overflow-hidden rounded-2xl bg-sand"
+            className={`relative aspect-[4/3] shrink-0 snap-center overflow-hidden rounded-2xl bg-sand ${count > 1 ? "w-[85%]" : "w-full"}`}
             aria-label={`Fotoğraf ${i + 1} / ${count}: büyüt`}
           >
             <Image

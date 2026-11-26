@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { PropertyListItem } from "@/app/(public)/_lib/data";
 import { Badge } from "@/components/ui/Badge";
 import { Icon } from "@/components/ui/Icon";
+import { LinkPendingOverlay } from "./LinkPendingOverlay";
 import { canOptimizeImage, formatPrice, propertyTypeLabel } from "./format";
 
 interface PropertyCardProps {
@@ -69,6 +70,7 @@ export function PropertyCard({ property, priority = false, query }: PropertyCard
         <h3 className="mt-2 font-display text-lg leading-snug font-semibold text-ink">
           <Link href={href} className="after:absolute after:inset-0 focus-visible:outline-none">
             {property.title}
+            <LinkPendingOverlay />
           </Link>
         </h3>
 

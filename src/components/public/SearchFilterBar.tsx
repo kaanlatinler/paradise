@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState, useTransition, type FormEvent } from "react";
+import { Spinner } from "@/components/ui/Spinner";
+import { startNavigationProgress } from "./NavigationProgress";
 import { Icon } from "@/components/ui/Icon";
 import { addDays, PROPERTY_TYPES } from "./format";
 import { useToday } from "./useToday";
@@ -20,6 +22,7 @@ export function SearchFilterBar({ className = "" }: { className?: string }) {
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState(2);
   const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -38,7 +41,8 @@ export function SearchFilterBar({ className = "" }: { className?: string }) {
     if (checkIn) params.set("checkIn", checkIn);
     if (checkOut) params.set("checkOut", checkOut);
     if (guests > 0) params.set("guests", String(guests));
-    router.push(`/properties${params.size ? `?${params}` : ""}`);
+    startNavigationProgress();
+    startTransition(() => router.push(`/properties${params.size ? `?${params}` : ""}`));
   }
 
   return (
@@ -117,9 +121,10 @@ export function SearchFilterBar({ className = "" }: { className?: string }) {
 
         <button
           type="submit"
-          className="inline-flex h-[2.875rem] items-center justify-center gap-2 rounded-xl bg-sea-500 px-6 text-sm font-semibold text-white transition hover:bg-sea-700 sm:col-span-2 lg:col-span-1"
+          disabled={pending}
+          className="inline-flex h-[2.875rem] items-center justify-center gap-2 rounded-xl bg-sea-500 px-6 text-sm font-semibold text-white transition hover:bg-sea-700 disabled:opacity-70 sm:col-span-2 lg:col-span-1"
         >
-          <Icon name="search" size={18} /> Ara
+          {pending ? <Spinner size={18} /> : <Icon name="search" size={18} />} {pending ? "Aranıyor…" : "Ara"}
         </button>
       </div>
       {error ? (

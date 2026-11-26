@@ -10,6 +10,8 @@ import { Icon } from "@/components/ui/Icon";
 import { addDays, isPropertyType, PROPERTY_TYPES } from "./format";
 import { POPULAR_CITIES } from "./SearchFilterBar";
 import { useToday } from "./useToday";
+import { startNavigationProgress } from "./NavigationProgress";
+import { Spinner } from "@/components/ui/Spinner";
 
 interface AmenityOption {
   id: string;
@@ -52,6 +54,7 @@ export function PropertyFilters({ initial, amenities }: { initial: ListingQuery;
   }
 
   function navigate(href: string) {
+    startNavigationProgress();
     startTransition(() => {
       router.push(href, { scroll: false });
     });
@@ -291,7 +294,7 @@ export function PropertyFilters({ initial, amenities }: { initial: ListingQuery;
             disabled={pending}
             className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-sea-500 text-sm font-semibold text-white transition hover:bg-sea-700 disabled:opacity-60"
           >
-            <Icon name="search" size={16} /> {pending ? "Aranıyor…" : "Filtrele"}
+            {pending ? <Spinner size={16} /> : <Icon name="search" size={16} />} {pending ? "Aranıyor…" : "Filtrele"}
           </button>
           <button
             type="button"

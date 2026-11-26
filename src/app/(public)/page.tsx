@@ -118,7 +118,7 @@ export default function HomePage() {
 
       {/* Neden biz */}
       <section className="container-page py-16 sm:py-20" aria-labelledby="perks-heading">
-        <SectionHeading eyebrow="Neden Paradise?" title="Tatilin en kolay hali" align="center" />
+        <SectionHeading eyebrow="Neden Biz?" title="Tatilin en kolay hali" align="center" />
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {PERKS.map((perk) => (
             <li key={perk.title} className="rounded-3xl border border-sand-dark/70 bg-white p-6">

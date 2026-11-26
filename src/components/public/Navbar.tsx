@@ -52,9 +52,11 @@ export function Navbar() {
           <Suspense fallback={null}>
             <QuickCall variant="desktop" />
           </Suspense>
-          <ButtonLink href="/properties" variant="primary" size="sm" className="hidden sm:inline-flex">
-            Rezervasyon Talep Et
-          </ButtonLink>
+          <div className="hidden sm:block">
+            <ButtonLink href="/properties" variant="primary" size="sm">
+              Rezervasyon Talep Et
+            </ButtonLink>
+          </div>
           <MobileMenu
             contactSlot={
               <Suspense fallback={null}>

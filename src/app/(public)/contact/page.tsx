@@ -87,7 +87,7 @@ export default function ContactPage() {
           <div className="flex gap-4">
             <Icon name="clock" size={28} className="mt-1 shrink-0 text-citrus-400" />
             <div>
-              <h2 className="font-display text-2xl font-semibold">Hızlı dönüş garantisi</h2>
+              <h2 className="font-display text-2xl font-semibold">Hızlı dönüş</h2>
               <p className="mt-1 text-white/80">Rezervasyon taleplerini sırayla inceliyor, en kısa sürede seninle iletişime geçiyoruz.</p>
             </div>
           </div>

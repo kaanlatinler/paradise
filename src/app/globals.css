@@ -39,6 +39,19 @@
   --shadow-lift: 0 2px 4px rgb(43 45 66 / 0.06), 0 18px 40px -16px rgb(2 62 138 / 0.3);
 
   --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --animate-progress: progress 8s cubic-bezier(0.1, 0.65, 0.2, 1) forwards;
+
+  @keyframes progress {
+    0% {
+      width: 0%;
+    }
+    15% {
+      width: 35%;
+    }
+    100% {
+      width: 88%;
+    }
+  }
 
   @keyframes shimmer {
     0% {
