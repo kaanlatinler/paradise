@@ -13,13 +13,16 @@ const loginSchema = z.object({
   password: z.string().min(6, "Şifre en az 6 karakter olmalıdır."),
 });
 
-export function hashPassword(password: string): string {
+export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.randomBytes(16).toString("hex");
   const derived = crypto.scryptSync(password, salt, 64).toString("hex");
   return `${salt}:${derived}`;
 }
 
-export function verifyPassword(password: string, storedHash: string | null): boolean {
+export async function verifyPassword(
+  password: string,
+  storedHash: string | null
+): Promise<boolean> {
   if (!storedHash) return false;
   const parts = storedHash.split(":");
   if (parts.length !== 2) return false;
