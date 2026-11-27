@@ -1,11 +1,15 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { createReservationRequest } from "@/actions/reservations";
 import { Icon } from "@/components/ui/Icon";
 import { AvailabilityCalendar, bookedNightSet, rangeIsFree, type BookedRange } from "./AvailabilityCalendar";
 import { formatDay, formatPrice, nightsBetween } from "./format";
 import { PhoneInput } from "./PhoneInput";
+import { Spinner } from "@/components/ui/Spinner";
+import { fmt } from "@/i18n";
+import { useI18n } from "@/i18n/client";
 import { useToday } from "./useToday";
 
 interface Props {
@@ -21,6 +25,29 @@ interface Props {
 
 type Success = { reservationId: string; nights: number; totalPrice: string };
 
+/**
+ * Sunucu (Geliştirici A) hata mesajları Türkçedir; İngilizce arayüzde bilinenler çevrilir,
+ * bilinmeyenler olduğu gibi gösterilir.
+ */
+const SERVER_ERRORS_EN: [RegExp, string | ((m: RegExpMatchArray) => string)][] = [
+  [/mevcut bir rezervasyon veya bekleyen talep/i, "These dates already have a booking or a pending request."],
+  [/en fazla (\d+) misafir/i, (m) => `This listing accepts at most ${m[1]} guests.`],
+  [/bulunamadı veya yayında değil/i, "This listing could not be found or is no longer available."],
+  [/geçerli bir e-posta/i, "Please enter a valid email address."],
+  [/telefon/i, "Please enter a valid phone number."],
+  [/ad soyad/i, "Your name must be at least 2 characters."],
+  [/çıkış tarihi/i, "Check-out must be at least 1 day after check-in."],
+];
+
+function translateServerError(message: string | undefined, lang: string): string | undefined {
+  if (!message || lang === "tr") return message;
+  for (const [re, en] of SERVER_ERRORS_EN) {
+    const m = message.match(re);
+    if (m) return typeof en === "string" ? en : en(m);
+  }
+  return message;
+}
+
 export function ReservationRequestForm({
   propertyId,
   propertyTitle,
@@ -32,6 +59,8 @@ export function ReservationRequestForm({
   initialGuests,
 }: Props) {
   const today = useToday();
+  const { lang, t } = useI18n();
+  const router = useRouter();
   const booked = useMemo(() => bookedNightSet(bookedRanges), [bookedRanges]);
 
   const initialValid =
@@ -62,16 +91,16 @@ export function ReservationRequestForm({
     setError(null);
 
     if (!range.checkIn || !range.checkOut) {
-      setError("Lütfen takvimden giriş ve çıkış tarihlerini seçin.");
+      setError(t.reservation.errorDates);
       return;
     }
     if (!phoneComplete) {
       setPhoneTouched(true);
-      setError("Lütfen telefon numaranızı ülke koduna uygun şekilde eksiksiz girin.");
+      setError(t.reservation.errorPhone);
       return;
     }
     if (pastSelection) {
-      setError("Geçmiş bir tarih seçilemez.");
+      setError(t.reservation.errorPast);
       return;
     }
 
@@ -93,11 +122,13 @@ export function ReservationRequestForm({
             nights: res.nights ?? nights,
             totalPrice: res.totalPrice ?? String(total),
           });
+          // Dolu günler (getBookedDateRanges) ve benzer veriler sunucudan tazelensin
+          router.refresh();
         } else {
-          setError(res.error || "Talep gönderilemedi. Lütfen tekrar deneyin.");
+          setError(translateServerError(res.error, lang) || t.reservation.errorGeneric);
         }
       } catch {
-        setError("Bağlantı hatası oluştu. Lütfen tekrar deneyin.");
+        setError(t.reservation.errorNetwork);
       }
     });
   }
@@ -108,23 +139,27 @@ export function ReservationRequestForm({
         <span className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-citrus-50 text-citrus-500">
           <Icon name="check" size={28} />
         </span>
-        <h3 className="font-display text-2xl font-semibold text-sea-700">Talebin alındı!</h3>
+        <h3 className="font-display text-2xl font-semibold text-sea-700">{t.reservation.successTitle}</h3>
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          <strong className="text-ink">{propertyTitle}</strong> için {formatDay(range.checkIn)} – {formatDay(range.checkOut)}{" "}
-          tarihleri arasındaki ({success.nights} gece) rezervasyon talebin ekibimize iletildi. En kısa sürede{" "}
-          <strong className="text-ink">{guestEmail}</strong> veya telefonla dönüş yapacağız.
+          {fmt(t.reservation.successText, {
+            title: propertyTitle,
+            from: formatDay(range.checkIn, "long", lang),
+            to: formatDay(range.checkOut, "long", lang),
+            n: success.nights,
+            email: guestEmail,
+          })}
         </p>
         <dl className="mt-5 grid grid-cols-2 gap-3 rounded-2xl bg-sand/70 p-4 text-left text-sm">
           <div>
-            <dt className="text-ink-soft">Tahmini toplam</dt>
-            <dd className="font-display text-lg font-semibold text-citrus-500">{formatPrice(success.totalPrice)}</dd>
+            <dt className="text-ink-soft">{t.reservation.estimatedTotal}</dt>
+            <dd className="font-display text-lg font-semibold text-citrus-500">{formatPrice(success.totalPrice, lang)}</dd>
           </div>
           <div>
-            <dt className="text-ink-soft">Talep no</dt>
+            <dt className="text-ink-soft">{t.reservation.requestNo}</dt>
             <dd className="truncate font-mono text-xs font-semibold text-ink">{success.reservationId}</dd>
           </div>
         </dl>
-        <p className="mt-4 text-xs text-ink-soft">Talebin onaylanana kadar “beklemede” durumundadır; ödeme alınmaz.</p>
+        <p className="mt-4 text-xs text-ink-soft">{t.reservation.pendingNote}</p>
       </div>
     );
   }
@@ -133,21 +168,21 @@ export function ReservationRequestForm({
     <form onSubmit={onSubmit} className="space-y-5 p-5 sm:p-6">
       <div className="flex items-end justify-between">
         <p>
-          <span className="font-display text-3xl font-semibold text-citrus-500">{formatPrice(pricePerNight)}</span>
-          <span className="text-sm text-ink-soft"> / gece</span>
+          <span className="font-display text-3xl font-semibold text-citrus-500">{formatPrice(pricePerNight, lang)}</span>
+          <span className="text-sm text-ink-soft"> {t.common.perNight}</span>
         </p>
-        <span className="text-xs font-semibold text-ink-soft">En fazla {capacity} kişi</span>
+        <span className="text-xs font-semibold text-ink-soft">{fmt(t.reservation.maxGuests, { n: capacity })}</span>
       </div>
 
       <div className="rounded-2xl border border-sand-dark p-3.5">
         <div className="mb-3 grid grid-cols-2 gap-2 text-sm">
           <div className={`rounded-xl px-3 py-2 bg-sand/60`}>
-            <p className="text-[0.65rem] font-bold tracking-wide text-ink-soft uppercase">Giriş</p>
-            <p className="font-semibold text-ink">{range.checkIn ? formatDay(range.checkIn, "short") : "Tarih seç"}</p>
+            <p className="text-[0.65rem] font-bold tracking-wide text-ink-soft uppercase">{t.reservation.checkIn}</p>
+            <p className="font-semibold text-ink">{range.checkIn ? formatDay(range.checkIn, "short", lang) : t.reservation.pickDate}</p>
           </div>
           <div className={`rounded-xl px-3 py-2 ${range.checkIn && !range.checkOut ? "bg-sea-50 ring-2 ring-sea-500" : "bg-sand/60"}`}>
-            <p className="text-[0.65rem] font-bold tracking-wide text-ink-soft uppercase">Çıkış</p>
-            <p className="font-semibold text-ink">{range.checkOut ? formatDay(range.checkOut, "short") : "Tarih seç"}</p>
+            <p className="text-[0.65rem] font-bold tracking-wide text-ink-soft uppercase">{t.reservation.checkOut}</p>
+            <p className="font-semibold text-ink">{range.checkOut ? formatDay(range.checkOut, "short", lang) : t.reservation.pickDate}</p>
           </div>
         </div>
         <AvailabilityCalendar
@@ -166,17 +201,17 @@ export function ReservationRequestForm({
             onClick={() => setRange({ checkIn: "", checkOut: "" })}
             className="mt-2 text-xs font-semibold text-sea-700 hover:underline"
           >
-            Tarihleri temizle
+            {t.reservation.clearDates}
           </button>
         ) : null}
       </div>
 
       <label className="block">
-        <span className="field-label">Misafir sayısı</span>
+        <span className="field-label">{t.reservation.guestCount}</span>
         <select value={guestCount} onChange={(e) => setGuestCount(Number(e.target.value))} className="field">
           {Array.from({ length: capacity }, (_, i) => i + 1).map((n) => (
             <option key={n} value={n}>
-              {n} misafir
+              {fmt(t.reservation.guestOption, { n })}
             </option>
           ))}
         </select>
@@ -184,7 +219,7 @@ export function ReservationRequestForm({
 
       <div className="grid gap-3">
         <label className="block">
-          <span className="field-label">Ad Soyad</span>
+          <span className="field-label">{t.reservation.name}</span>
           <input
             required
             minLength={2}
@@ -194,9 +229,9 @@ export function ReservationRequestForm({
             className="field"
           />
         </label>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        <div className="grid gap-3">
           <label className="block">
-            <span className="field-label">E-posta</span>
+            <span className="field-label">{t.reservation.email}</span>
             <input
               required
               type="email"
@@ -211,17 +246,18 @@ export function ReservationRequestForm({
             onChange={(full, complete) => {
               setGuestPhone(full);
               setPhoneComplete(complete);
+              if (complete && phoneTouched) setError(null);
             }}
           />
         </div>
         <label className="block">
-          <span className="field-label">Not (isteğe bağlı)</span>
+          <span className="field-label">{t.reservation.notes}</span>
           <textarea
             rows={3}
             maxLength={500}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Varış saati, bebek yatağı ihtiyacı vb."
+            placeholder={t.reservation.notesPlaceholder}
             className="field resize-none"
           />
         </label>
@@ -231,13 +267,13 @@ export function ReservationRequestForm({
         <dl className="space-y-2 rounded-2xl bg-sand/60 p-4 text-sm">
           <div className="flex justify-between text-ink-soft">
             <dt>
-              {formatPrice(price)} × {nights} gece
+              {fmt(t.reservation.nightsLine, { price: formatPrice(price, lang), n: nights })}
             </dt>
-            <dd>{formatPrice(total)}</dd>
+            <dd>{formatPrice(total, lang)}</dd>
           </div>
           <div className="flex justify-between border-t border-sand-dark pt-2 font-semibold text-ink">
-            <dt>Tahmini toplam</dt>
-            <dd className="font-display text-lg text-citrus-500">{formatPrice(total)}</dd>
+            <dt>{t.reservation.estimatedTotal}</dt>
+            <dd className="font-display text-lg text-citrus-500">{formatPrice(total, lang)}</dd>
           </div>
         </dl>
       ) : null}
@@ -253,9 +289,15 @@ export function ReservationRequestForm({
         disabled={pending}
         className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-full bg-citrus-500 text-base font-semibold text-white shadow-[0_8px_20px_-8px_rgb(251_133_0/0.7)] transition hover:bg-citrus-600 disabled:opacity-60"
       >
-        {pending ? "Gönderiliyor…" : "Rezervasyon Talebi Gönder"}
+        {pending ? (
+          <>
+            <Spinner size={18} /> {t.reservation.submitting}
+          </>
+        ) : (
+          t.reservation.submit
+        )}
       </button>
-      <p className="text-center text-xs text-ink-soft">Talep göndermek ücretsizdir; onay sonrası seninle iletişime geçeriz.</p>
+      <p className="text-center text-xs text-ink-soft">{t.reservation.freeNote}</p>
     </form>
   );
 }

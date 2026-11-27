@@ -11,11 +11,18 @@ function createPasswordHash(password: string): string {
 }
 
 async function main() {
-  const adminPasswordHash = createPasswordHash("Admin1234!");
+  // Admin şifresi koda gömülmez: SEED_ADMIN_PASSWORD ortam değişkeninden okunur.
+  // Mevcut admin kullanıcısının şifresi seed tekrar çalıştırıldığında EZİLMEZ
+  // (şifre değiştirmek için: npx tsx scripts/change-admin-password.ts).
+  const seedPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!seedPassword || seedPassword.length < 12) {
+    throw new Error("SEED_ADMIN_PASSWORD ortam değişkeni en az 12 karakter olarak tanımlanmalı (.env).");
+  }
+  const adminPasswordHash = createPasswordHash(seedPassword);
 
   await prisma.user.upsert({
     where: { email: "admin@akdenizstay.com" },
-    update: { passwordHash: adminPasswordHash, role: Role.ADMIN },
+    update: { role: Role.ADMIN },
     create: {
       email: "admin@akdenizstay.com",
       name: "Sistem Yöneticisi",

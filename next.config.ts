@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   reactCompiler: true,
+  // [Geliştirici B] Birden fazla kök düzen (vitrin [lang] + admin) olduğu için eşleşmeyen adreslere genel 404 sayfası
+  experimental: {
+    globalNotFound: true,
+  },
   turbopack: {
     rules: {
       "*.css": {

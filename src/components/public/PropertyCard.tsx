@@ -1,8 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { PropertyListItem } from "@/app/(public)/_lib/data";
+import type { PropertyListItem } from "@/components/public/lib/data";
+import { amenityName, fmt } from "@/i18n";
+import { getI18n } from "@/i18n/server";
 import { Badge } from "@/components/ui/Badge";
 import { Icon } from "@/components/ui/Icon";
+import { LinkPendingOverlay } from "./LinkPendingOverlay";
 import { canOptimizeImage, formatPrice, propertyTypeLabel } from "./format";
 
 interface PropertyCardProps {
@@ -27,9 +30,12 @@ interface PropertyCardProps {
   query?: string;
 }
 
-export function PropertyCard({ property, priority = false, query }: PropertyCardProps) {
+export async function PropertyCard({ property, priority = false, query }: PropertyCardProps) {
+  const { lang, t, href: localize } = await getI18n();
+  // İlan başlıkları veritabanında Türkçe; İngilizce sayfada ekran okuyucular için dil işaretlenir
+  const contentLang = lang === "tr" ? undefined : "tr";
   const cover = property.images.find((img) => img.isCover) ?? property.images[0];
-  const href = `/properties/${property.slug}${query ? `?${query}` : ""}`;
+  const href = `${localize(`/properties/${property.slug}`)}${query ? `?${query}` : ""}`;
   const extraAmenities = Math.max(0, property.amenities.length - 3);
 
   return (
@@ -51,10 +57,10 @@ export function PropertyCard({ property, priority = false, query }: PropertyCard
           </div>
         )}
         <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
-          <Badge tone="white">{propertyTypeLabel(property.type)}</Badge>
+          <Badge tone="white">{propertyTypeLabel(t, property.type)}</Badge>
           {property.isFeatured ? (
             <Badge tone="citrus">
-              <Icon name="star" size={12} className="fill-current" /> Öne Çıkan
+              <Icon name="star" size={12} className="fill-current" /> {t.common.featured}
             </Badge>
           ) : null}
         </div>
@@ -67,20 +73,21 @@ export function PropertyCard({ property, priority = false, query }: PropertyCard
         </p>
 
         <h3 className="mt-2 font-display text-lg leading-snug font-semibold text-ink">
-          <Link href={href} className="after:absolute after:inset-0 focus-visible:outline-none">
+          <Link href={href} lang={contentLang} className="after:absolute after:inset-0 focus-visible:outline-none">
             {property.title}
+            <LinkPendingOverlay />
           </Link>
         </h3>
 
         <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-soft">
           <li className="inline-flex items-center gap-1.5">
-            <Icon name="users" size={16} /> {property.capacity} kişi
+            <Icon name="users" size={16} /> {fmt(t.common.guests, { n: property.capacity })}
           </li>
           <li className="inline-flex items-center gap-1.5">
-            <Icon name="bed" size={16} /> {property.bedrooms} yatak odası
+            <Icon name="bed" size={16} /> {fmt(t.common.bedrooms, { n: property.bedrooms })}
           </li>
           <li className="inline-flex items-center gap-1.5">
-            <Icon name="bath" size={16} /> {property.bathrooms} banyo
+            <Icon name="bath" size={16} /> {fmt(t.common.bathrooms, { n: property.bathrooms })}
           </li>
         </ul>
 
@@ -89,7 +96,7 @@ export function PropertyCard({ property, priority = false, query }: PropertyCard
             {property.amenities.slice(0, 3).map((a) => (
               <li key={a.id}>
                 <Badge tone="sea">
-                  <Icon name={a.icon ?? "sparkles"} size={12} /> {a.name}
+                  <Icon name={a.icon ?? "sparkles"} size={12} /> {amenityName(t, a)}
                 </Badge>
               </li>
             ))}
@@ -104,11 +111,11 @@ export function PropertyCard({ property, priority = false, query }: PropertyCard
         <div className="min-h-5 flex-1" />
         <div className="flex items-end justify-between gap-3 border-t border-sand pt-4">
           <p>
-            <span className="font-display text-2xl font-semibold text-citrus-500">{formatPrice(property.pricePerNight)}</span>
-            <span className="text-sm text-ink-soft"> / gece</span>
+            <span className="font-display text-2xl font-semibold text-citrus-500">{formatPrice(property.pricePerNight, lang)}</span>
+            <span className="text-sm text-ink-soft"> {t.common.perNight}</span>
           </p>
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-sea-700 transition group-hover:gap-2">
-            İncele <Icon name="arrow-right" size={16} />
+            {t.common.view} <Icon name="arrow-right" size={16} />
           </span>
         </div>
       </div>

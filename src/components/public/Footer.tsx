@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { getCms, cmsValue } from "@/app/(public)/_lib/data";
+import { cmsValue, getCms } from "@/components/public/lib/data";
 import { Icon } from "@/components/ui/Icon";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { getI18n } from "@/i18n/server";
+import { listingHref } from "./lib/search-params";
 import { Logo } from "./Logo";
 import { PROPERTY_TYPES } from "./format";
 
@@ -27,7 +29,9 @@ async function FooterContact() {
   );
 }
 
-export function Footer() {
+export async function Footer() {
+  const { lang, t, href } = await getI18n();
+
   return (
     <footer className="mt-auto bg-sea-900 text-white/80">
       {/* dalga geçişi */}
@@ -37,53 +41,51 @@ export function Footer() {
 
       <div className="container-page grid gap-10 pt-8 pb-12 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-4 lg:col-span-1">
-          <Logo tone="light" />
-          <p className="max-w-xs text-sm leading-relaxed">
-            Akdeniz kıyısında günlük kiralık villa, müstakil ev ve apartlar. Deniz, kum ve turunç kokusu bir arada.
-          </p>
+          <Logo tone="light" href={href("/")} label={t.common.homeAria} />
+          <p className="max-w-xs text-sm leading-relaxed">{t.footer.about}</p>
         </div>
 
         <div>
-          <h2 className="mb-4 font-display text-lg text-white">Konaklama</h2>
+          <h2 className="mb-4 font-display text-lg text-white">{t.footer.stays}</h2>
           <ul className="space-y-2.5 text-sm">
-            {PROPERTY_TYPES.map((t) => (
-              <li key={t.key}>
-                <Link href={`/properties?type=${t.key}`} className="hover:text-citrus-400">
-                  {t.plural}
+            {PROPERTY_TYPES.map((type) => (
+              <li key={type.key}>
+                <Link href={listingHref(lang, { type: type.key })} className="hover:text-citrus-400">
+                  {t.types[type.key].plural}
                 </Link>
               </li>
             ))}
             <li>
-              <Link href="/properties?featured=1" className="hover:text-citrus-400">
-                Öne Çıkanlar
+              <Link href={listingHref(lang, { featured: true })} className="hover:text-citrus-400">
+                {t.footer.featured}
               </Link>
             </li>
           </ul>
         </div>
 
         <div>
-          <h2 className="mb-4 font-display text-lg text-white">Kurumsal</h2>
+          <h2 className="mb-4 font-display text-lg text-white">{t.footer.company}</h2>
           <ul className="space-y-2.5 text-sm">
             <li>
-              <Link href="/about" className="hover:text-citrus-400">
-                Hakkımızda
+              <Link href={href("/about")} className="hover:text-citrus-400">
+                {t.nav.about}
               </Link>
             </li>
             <li>
-              <Link href="/contact" className="hover:text-citrus-400">
-                İletişim
+              <Link href={href("/contact")} className="hover:text-citrus-400">
+                {t.nav.contact}
               </Link>
             </li>
             <li>
-              <Link href="/properties" className="hover:text-citrus-400">
-                Tüm İlanlar
+              <Link href={href("/properties")} className="hover:text-citrus-400">
+                {t.footer.allListings}
               </Link>
             </li>
           </ul>
         </div>
 
         <div>
-          <h2 className="mb-4 font-display text-lg text-white">Bize Ulaşın</h2>
+          <h2 className="mb-4 font-display text-lg text-white">{t.footer.reachUs}</h2>
           <Suspense
             fallback={
               <div className="space-y-3">
@@ -99,10 +101,8 @@ export function Footer() {
 
       <div className="border-t border-white/10">
         <div className="container-page flex flex-col gap-2 py-5 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © 2026 Paradise Emlak. Tüm hakları saklıdır.
-          </p>
-          <p>Fiyatlar gecelik olup rezervasyon talepleri onay sonrası kesinleşir.</p>
+          <p>{t.footer.rights}</p>
+          <p>{t.footer.priceNote}</p>
         </div>
       </div>
     </footer>

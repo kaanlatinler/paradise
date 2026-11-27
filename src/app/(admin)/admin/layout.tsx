@@ -1,42 +1,14 @@
-import React from "react";
-import Link from "next/link";
-import { logoutAdminAction } from "@/actions/admin-auth";
+import { Suspense } from "react";
+import { AdminShell } from "@/components/admin/AdminShell";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+/**
+ * Panel kabuğu (kenar menü). Erişim kontrolü proxy.ts'de yapılır; giriş sayfasında kabuk gizlenir.
+ * AdminShell aktif menü için usePathname kullandığından Suspense içinde render edilir.
+ */
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-          <nav className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-700">
-            <Link href="/admin" className="hover:text-sky-800">
-              Dashboard
-            </Link>
-            <Link href="/admin/properties" className="hover:text-sky-800">
-              İlanlar
-            </Link>
-            <Link href="/admin/reservations" className="hover:text-sky-800">
-              Rezervasyonlar
-            </Link>
-            <Link href="/admin/content" className="hover:text-sky-800">
-              Dinamik İçerik (CMS)
-            </Link>
-          </nav>
-
-          <form action={logoutAdminAction}>
-            <button
-              type="submit"
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
-            >
-              Çıkış Yap
-            </button>
-          </form>
-        </div>
-      </header>
-      <main>{children}</main>
-    </div>
+    <Suspense fallback={<div className="min-h-dvh bg-shell" />}>
+      <AdminShell>{children}</AdminShell>
+    </Suspense>
   );
 }

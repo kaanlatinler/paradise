@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
-import { addDays, toDayKey } from "./format";
+import { useI18n } from "@/i18n/client";
+import { addDays, formatMonth, toDayKey } from "./format";
 
 export interface BookedRange {
   checkIn: string; // ISO
@@ -35,8 +36,6 @@ export function rangeIsFree(checkIn: string, checkOut: string, booked: Set<strin
   return true;
 }
 
-const WEEKDAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
-const monthTitle = new Intl.DateTimeFormat("tr-TR", { month: "long", year: "numeric", timeZone: "UTC" });
 
 function monthOf(day: string) {
   return day.slice(0, 7); // YYYY-MM
@@ -74,6 +73,7 @@ interface Props {
  * 1. tık: giriş, 2. tık: çıkış. Arada dolu gece varsa seçim yeni giriş olarak başlar.
  */
 export function AvailabilityCalendar({ booked, today, checkIn, checkOut, onChange }: Props) {
+  const { lang, t } = useI18n();
   const [viewMonth, setViewMonth] = useState<string>();
   const [hover, setHover] = useState<string>();
 
@@ -115,18 +115,18 @@ export function AvailabilityCalendar({ booked, today, checkIn, checkOut, onChang
           type="button"
           onClick={() => setViewMonth(shiftMonth(month, -1))}
           disabled={!canGoBack}
-          aria-label="Önceki ay"
+          aria-label={t.calendar.prevMonth}
           className="grid size-9 place-items-center rounded-full text-ink transition hover:bg-sand disabled:opacity-30"
         >
           <Icon name="chevron-left" size={18} />
         </button>
         <p className="font-display text-base font-semibold text-ink capitalize" aria-live="polite">
-          {monthTitle.format(new Date(`${month}-01T00:00:00Z`))}
+          {formatMonth(month, lang)}
         </p>
         <button
           type="button"
           onClick={() => setViewMonth(shiftMonth(month, 1))}
-          aria-label="Sonraki ay"
+          aria-label={t.calendar.nextMonth}
           className="grid size-9 place-items-center rounded-full text-ink transition hover:bg-sand"
         >
           <Icon name="chevron-right" size={18} />
@@ -134,7 +134,7 @@ export function AvailabilityCalendar({ booked, today, checkIn, checkOut, onChang
       </div>
 
       <div className="grid grid-cols-7 text-center text-[0.7rem] font-bold tracking-wide text-ink-soft uppercase">
-        {WEEKDAYS.map((w) => (
+        {t.calendar.weekdays.map((w) => (
           <span key={w} className="py-1.5">
             {w}
           </span>
@@ -164,7 +164,7 @@ export function AvailabilityCalendar({ booked, today, checkIn, checkOut, onChang
                 onClick={() => select(day)}
                 onMouseEnter={() => setHover(day)}
                 aria-pressed={isStart || isEnd}
-                aria-label={`${day}${isBooked ? " (dolu)" : ""}`}
+                aria-label={`${day}${isBooked ? t.calendar.bookedSuffix : ""}`}
                 className={`relative mx-auto grid aspect-square w-full max-w-10 place-items-center rounded-full text-sm font-semibold transition ${
                   isStart || (isEnd && checkIn)
                     ? "bg-sea-500 text-white"
@@ -184,13 +184,13 @@ export function AvailabilityCalendar({ booked, today, checkIn, checkOut, onChang
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-soft">
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-3 rounded-full bg-sea-500" /> Seçili
+          <span className="size-3 rounded-full bg-sea-500" /> {t.calendar.selected}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="text-ink-soft/60 line-through decoration-citrus-500 decoration-2">12</span> Dolu
+          <span className="text-ink-soft/60 line-through decoration-citrus-500 decoration-2">12</span> {t.calendar.booked}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-3 rounded-full ring-1 ring-citrus-400" /> Bugün
+          <span className="size-3 rounded-full ring-1 ring-citrus-400" /> {t.calendar.today}
         </span>
       </div>
     </div>
